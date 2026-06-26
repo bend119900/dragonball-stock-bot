@@ -79,13 +79,24 @@ def check_total_cards():
 
         product_url = urljoin(COLLECTION_URL, href)
 
-        products.append({
-            "store": STORE_NAME,
-            "name": name,
-            "price": "Unknown",
-            "url": product_url,
-            "in_stock": True
-        })
+        product_text = link.parent.get_text(" ", strip=True).lower()
+
+out_of_stock_words = [
+    "sold out",
+    "out of stock",
+    "notify me",
+    "unavailable"
+]
+
+in_stock = not any(word in product_text for word in out_of_stock_words)
+
+products.append({
+    "store": STORE_NAME,
+    "name": name,
+    "price": "Unknown",
+    "url": product_url,
+    "in_stock": in_stock
+})
 
     # Remove duplicates
     unique = []
