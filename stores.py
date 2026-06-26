@@ -39,7 +39,7 @@ def check_magic_madhouse():
 
         product_url = urljoin(search_url, link["href"])
         
-        if "/products/" not in product_url:
+        if "bandai-dragon" not in product_url.lower():
             continue
         products.append({
             "store": store,
