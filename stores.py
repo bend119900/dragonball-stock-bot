@@ -38,7 +38,9 @@ def check_magic_madhouse():
             continue
 
         product_url = urljoin(search_url, link["href"])
-
+        
+        if "/products/" not in product_url:
+            continue
         products.append({
             "store": store,
             "name": name,
