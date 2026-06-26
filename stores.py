@@ -46,6 +46,7 @@ def check_magic_madhouse():
 
     for link in soup.find_all("a", href=True):
         name = link.get_text(" ", strip=True)
+        print("LINK FOUND:", name, link["href"])
 
         if not name:
             continue
