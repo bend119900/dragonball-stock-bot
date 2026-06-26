@@ -41,11 +41,19 @@ def send_telegram(message):
         return
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    requests.post(url, data={
-        "chat_id": CHAT_ID,
-        "text": message,
-        "disable_web_page_preview": True
-    }, timeout=20)
+
+    response = requests.post(
+        url,
+        data={
+            "chat_id": CHAT_ID,
+            "text": message,
+            "disable_web_page_preview": True
+        },
+        timeout=20
+    )
+
+    print("Telegram response:", response.status_code)
+    print(response.text)
 
 def page_mentions_stock(text):
     text = text.lower()
