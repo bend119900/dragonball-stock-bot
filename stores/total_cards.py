@@ -22,7 +22,15 @@ PRODUCT_WORDS = [
 
 def looks_like_product(text):
     text = text.lower()
-    return any(word in text for word in PRODUCT_WORDS)
+
+    dragon_words = [
+        "dragon ball",
+        "dragonball",
+        "fusion world",
+        "dragon ball super"
+    ]
+
+    return any(word in text for word in dragon_words)
 
 
 def check_total_cards():
