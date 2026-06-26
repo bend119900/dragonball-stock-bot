@@ -15,14 +15,6 @@ STORES = [
         "url": "https://totalcards.net/search?type=product&q=dragon+ball+fusion+world"
     },
     {
-        "store": "Chaos Cards",
-        "url": "https://www.chaoscards.co.uk/search/dragon%20ball%20fusion%20world"
-    },
-    {
-        "store": "Zatu Games",
-        "url": "https://www.board-game.co.uk/search-results/?query=dragon%20ball%20fusion%20world"
-    },
-    {
         "store": "Magic Madhouse",
         "url": "https://magicmadhouse.co.uk/search?q=dragon%20ball%20fusion%20world"
     }
