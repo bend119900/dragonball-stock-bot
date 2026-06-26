@@ -81,6 +81,7 @@ def check_store(store):
     return False
 
 def main():
+        send_telegram("✅ Dragon Ball stock bot test: Telegram is connected!")
     found_anything = False
 
     for store in STORES:
