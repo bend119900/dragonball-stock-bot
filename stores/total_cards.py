@@ -6,19 +6,6 @@ from urllib.parse import urljoin
 STORE_NAME = "Total Cards"
 COLLECTION_URL = "https://totalcards.net/collections/dragon-ball-super-fusion-world-1"
 
-PRODUCT_WORDS = [
-    "dragon ball",
-    "fusion world",
-    "dragon ball super",
-    "booster",
-    "starter",
-    "deck",
-    "pack",
-    "box",
-    "pre-release",
-    "premium",
-]
-
 
 def looks_like_product(text):
     text = text.lower()
@@ -81,24 +68,23 @@ def check_total_cards():
 
         product_text = link.parent.get_text(" ", strip=True).lower()
 
-out_of_stock_words = [
-    "sold out",
-    "out of stock",
-    "notify me",
-    "unavailable"
-]
+        out_of_stock_words = [
+            "sold out",
+            "out of stock",
+            "notify me",
+            "unavailable"
+        ]
 
-in_stock = not any(word in product_text for word in out_of_stock_words)
+        in_stock = not any(word in product_text for word in out_of_stock_words)
 
-products.append({
-    "store": STORE_NAME,
-    "name": name,
-    "price": "Unknown",
-    "url": product_url,
-    "in_stock": in_stock
-})
+        products.append({
+            "store": STORE_NAME,
+            "name": name,
+            "price": "Unknown",
+            "url": product_url,
+            "in_stock": in_stock
+        })
 
-    # Remove duplicates
     unique = []
     seen = set()
 
