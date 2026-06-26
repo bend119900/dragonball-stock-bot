@@ -18,7 +18,7 @@ def is_dragon_ball_product(name):
 
 def check_magic_madhouse():
     store = "Magic Madhouse"
-    search_url = "https://magicmadhouse.co.uk/search?q=dragon%20ball%20fusion%20world"
+    search_url = "https://magicmadhouse.co.uk/other-tcgs/more-games/dragonball"
 
     headers = {"User-Agent": "Mozilla/5.0"}
 
@@ -39,7 +39,7 @@ def check_magic_madhouse():
 
         product_url = urljoin(search_url, link["href"])
         
-        if "bandai-dragon" not in product_url.lower():
+        if "dragon" not in product_url.lower():
             continue
         products.append({
             "store": store,
