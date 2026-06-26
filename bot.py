@@ -1,59 +1,12 @@
 import os
-import json
-import hashlib
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
+
+from stores import get_all_products
+from tracker import load_state, save_state, already_alerted, mark_alerted
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-STATE_FILE = "state.json"
-
-STORES = [
-    {
-        "store": "Total Cards",
-        "url": "https://totalcards.net/search?type=product&q=dragon+ball+fusion+world"
-    },
-    {
-        "store": "Magic Madhouse",
-        "url": "https://magicmadhouse.co.uk/search?q=dragon%20ball%20fusion%20world"
-    }
-]
-
-KEYWORDS = [
-    "dragon ball",
-    "dragonball",
-    "fusion world",
-    "dragon ball super"
-]
-
-STOCK_WORDS = [
-    "add to cart",
-    "add to basket",
-    "buy now",
-    "pre-order",
-    "preorder",
-    "in stock"
-]
-
-OUT_OF_STOCK_WORDS = [
-    "out of stock",
-    "sold out",
-    "unavailable"
-]
-
-
-def load_state():
-    try:
-        with open(STATE_FILE, "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {"alerts_sent": []}
-
-
-def save_state(state):
-    with open(STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2)
 
 
 def send_telegram(message):
@@ -79,72 +32,41 @@ def send_telegram(message):
     return response.status_code == 200
 
 
-def make_alert_id(store, url):
-    raw = f"{store}|{url}"
-    return hashlib.sha256(raw.encode()).hexdigest()
-
-
-def page_has_dragon_ball_stock(text):
-    text = text.lower()
-
-    has_keyword = any(word in text for word in KEYWORDS)
-    has_stock = any(word in text for word in STOCK_WORDS)
-    out_of_stock = any(word in text for word in OUT_OF_STOCK_WORDS)
-
-    return has_keyword and has_stock and not out_of_stock
-
-
-def check_store(store):
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    print(f"Checking {store['store']}...")
-
-    response = requests.get(store["url"], headers=headers, timeout=25)
-    response.raise_for_status()
-
-    soup = BeautifulSoup(response.text, "html.parser")
-    text = soup.get_text(" ", strip=True)
-
-    found = page_has_dragon_ball_stock(text)
-
-    print(f"{store['store']} result: {found}")
-
-    return found
-
-
 def main():
     print("Starting Dragon Ball UK stock check...")
 
     state = load_state()
-    alerts_sent = state.get("alerts_sent", [])
+    products = get_all_products()
 
-    for store in STORES:
-        try:
-            found = check_store(store)
+    print(f"Products found: {len(products)}")
 
-            if found:
-                alert_id = make_alert_id(store["store"], store["url"])
+    for product in products:
+        store = product["store"]
+        name = product["name"]
+        price = product["price"]
+        url = product["url"]
+        in_stock = product["in_stock"]
 
-                if alert_id not in alerts_sent:
-                    message = (
-                        "🚨 DRAGON BALL STOCK FOUND\n\n"
-                        f"🏪 Store: {store['store']}\n"
-                        f"🔗 Link: {store['url']}\n\n"
-                        f"⏰ Checked: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
-                    )
+        if not in_stock:
+            continue
 
-                    if send_telegram(message):
-                        alerts_sent.append(alert_id)
-                        print(f"Alert sent for {store['store']}")
-                else:
-                    print(f"Already alerted for {store['store']}, skipping.")
+        if already_alerted(state, store, name, url):
+            print(f"Already alerted: {store} - {name}")
+            continue
 
-        except Exception as e:
-            print(f"Error checking {store['store']}: {e}")
+        message = (
+            "🚨 DRAGON BALL PRODUCT FOUND\n\n"
+            f"🏪 Store: {store}\n"
+            f"📦 Product: {name}\n"
+            f"💷 Price: {price}\n"
+            f"🔗 Link: {url}\n\n"
+            f"⏰ Checked: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        )
 
-    state["alerts_sent"] = alerts_sent
+        if send_telegram(message):
+            mark_alerted(state, store, name, url)
+            print(f"Alert sent: {store} - {name}")
+
     save_state(state)
 
     print("Stock check finished.")
