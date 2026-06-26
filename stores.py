@@ -13,7 +13,23 @@ KEYWORDS = [
 
 def is_dragon_ball_product(name):
     name = name.lower()
-    return any(keyword in name for keyword in KEYWORDS)
+
+    if not any(keyword in name for keyword in KEYWORDS):
+        return False
+
+    product_words = [
+        "booster",
+        "starter",
+        "deck",
+        "box",
+        "pack",
+        "display",
+        "premium",
+        "fusion world",
+        "dragon ball super card game"
+    ]
+
+    return any(word in name for word in product_words)
 
 
 def check_magic_madhouse():
