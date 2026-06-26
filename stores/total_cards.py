@@ -30,7 +30,29 @@ def looks_like_product(text):
         "dragon ball super"
     ]
 
-    return any(word in text for word in dragon_words)
+    sealed_words = [
+        "booster",
+        "booster box",
+        "booster pack",
+        "starter",
+        "deck",
+        "energy marker",
+        "pre-release",
+        "premium"
+    ]
+
+    excluded_words = [
+        "common",
+        "uncommon",
+        "rare",
+        "tournament pack"
+    ]
+
+    return (
+        any(word in text for word in dragon_words)
+        and any(word in text for word in sealed_words)
+        and not any(word in text for word in excluded_words)
+    )
 
 
 def check_total_cards():
