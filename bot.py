@@ -37,6 +37,8 @@ def main():
 
     state = load_state()
     products = get_all_products()
+    alerts_sent = 0
+    in_stock_count = 0
 
     print(f"Products found: {len(products)}")
 
@@ -49,6 +51,8 @@ def main():
 
         if not in_stock:
             continue
+
+        in_stock_count += 1
 
         if already_alerted(state, store, name, url):
             print(f"Already alerted: {store} - {name}")
@@ -64,12 +68,22 @@ def main():
         )
 
         if send_telegram(message):
+            alerts_sent += 1
             mark_alerted(state, store, name, url)
-            print(f"Alert sent: {store} - {name}")
+            print(f"✅ Alert sent: {store} - {name}")
+
+    
+
 
     save_state(state)
 
-    print("Stock check finished.")
+    print()
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    print("Stock check complete")
+    print(f"Products scanned : {len(products)}")
+    print(f"In stock         : {in_stock_count}")
+    print(f"Alerts sent      : {alerts_sent}")
+    print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 
 if __name__ == "__main__":
