@@ -1,6 +1,6 @@
 import re
 import time
-import requests
+from .base import get_soup
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
@@ -60,11 +60,7 @@ def get_price(soup):
 
 
 def get_product_links():
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(COLLECTION_URL, headers=headers, timeout=25)
-    response.raise_for_status()
-
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = get_soup(COLLECTION_URL)
     links = []
 
     for link in soup.find_all("a", href=True):
@@ -99,11 +95,7 @@ def get_product_links():
 
 
 def check_product_page(item):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(item["url"], headers=headers, timeout=25)
-    response.raise_for_status()
-
-    soup = BeautifulSoup(response.text, "html.parser")
+    soup = get_soup(item["url"])
     text = soup.get_text(" ", strip=True)
     text_lower = text.lower()
 
