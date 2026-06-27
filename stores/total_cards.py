@@ -3,6 +3,7 @@ import time
 from .base import get_soup
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from config import WATCH
 
 
 STORE_NAME = "Total Cards"
@@ -12,25 +13,32 @@ COLLECTION_URL = "https://totalcards.net/collections/dragon-ball-super-fusion-wo
 def looks_like_product(text):
     text = text.lower()
 
-    dragon_words = [
-        "dragon ball",
-        "dragonball",
-        "fusion world",
-        "dragon ball super"
-    ]
+    if WATCH["fusion_world"]:
+        if "fusion world" not in text and "dragon ball super" not in text:
+            return False
 
-    sealed_words = [
-        "booster",
-        "booster box",
-        "booster pack",
-        "starter",
-        "deck",
-        "energy marker",
-        "pre-release",
-        "premium"
-    ]
+    if not WATCH["masters"]:
+        if "masters" in text:
+            return False
 
-    excluded_words = [
+    allowed = []
+
+    if WATCH["booster_boxes"]:
+        allowed.extend(["booster box", "box"])
+
+    if WATCH["booster_packs"]:
+        allowed.extend(["booster pack", "pack"])
+
+    if WATCH["starter_decks"]:
+        allowed.extend(["starter deck", "deck"])
+
+    if WATCH["accessories"]:
+        allowed.extend(["energy marker", "premium"])
+
+    if WATCH["pre_orders"]:
+        allowed.extend(["pre-order", "preorder", "pre-release"])
+
+    excluded = [
         "common",
         "uncommon",
         "rare",
@@ -38,11 +46,9 @@ def looks_like_product(text):
     ]
 
     return (
-        any(word in text for word in dragon_words)
-        and any(word in text for word in sealed_words)
-        and not any(word in text for word in excluded_words)
+        any(word in text for word in allowed)
+        and not any(word in text for word in excluded)
     )
-
 
 def get_price(soup):
     price_tag = soup.select_one(".price-item.product-price")
