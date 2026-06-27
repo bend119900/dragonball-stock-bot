@@ -1,3 +1,5 @@
+import re
+import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -42,14 +44,28 @@ def looks_like_product(text):
     )
 
 
-def check_total_cards():
-    headers = {"User-Agent": "Mozilla/5.0"}
+def get_price(soup):
+    price_tag = soup.select_one(".price-item.product-price")
 
+    if price_tag:
+        data_price = price_tag.get("data-price")
+        if data_price:
+            return f"£{data_price}"
+
+        text_price = price_tag.get_text(" ", strip=True)
+        if text_price:
+            return text_price
+
+    return "Unknown"
+
+
+def get_product_links():
+    headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(COLLECTION_URL, headers=headers, timeout=25)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")
-    products = []
+    links = []
 
     for link in soup.find_all("a", href=True):
         name = link.get_text(" ", strip=True)
@@ -66,32 +82,78 @@ def check_total_cards():
 
         product_url = urljoin(COLLECTION_URL, href)
 
-        product_text = link.parent.get_text(" ", strip=True).lower()
-
-        out_of_stock_words = [
-            "sold out",
-            "out of stock",
-            "notify me",
-            "unavailable"
-        ]
-
-        in_stock = not any(word in product_text for word in out_of_stock_words)
-
-        products.append({
-            "store": STORE_NAME,
+        links.append({
             "name": name,
-            "price": "Unknown",
-            "url": product_url,
-            "in_stock": in_stock
+            "url": product_url
         })
 
     unique = []
     seen = set()
 
-    for product in products:
-        key = product["url"]
-        if key not in seen:
-            seen.add(key)
-            unique.append(product)
+    for item in links:
+        if item["url"] not in seen:
+            seen.add(item["url"])
+            unique.append(item)
 
     return unique
+
+
+def check_product_page(item):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(item["url"], headers=headers, timeout=25)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "html.parser")
+    text = soup.get_text(" ", strip=True)
+    text_lower = text.lower()
+
+    out_of_stock_words = [
+        "sold out",
+        "out of stock",
+        "notify me when available",
+        "unavailable"
+    ]
+
+    in_stock_words = [
+        "add to cart",
+        "add to basket",
+        "buy it now",
+        "pre-order",
+        "preorder"
+    ]
+
+    is_out_of_stock = any(word in text_lower for word in out_of_stock_words)
+    has_buy_button = any(word in text_lower for word in in_stock_words)
+
+    in_stock = has_buy_button and not is_out_of_stock
+    price = get_price(soup)
+
+    return {
+        "store": STORE_NAME,
+        "name": item["name"],
+        "price": price,
+        "url": item["url"],
+        "in_stock": in_stock
+    }
+
+
+def check_total_cards():
+    product_links = get_product_links()
+    print(f"Total Cards product links found: {len(product_links)}")
+
+    products = []
+
+    for item in product_links:
+        try:
+            time.sleep(1)
+            product = check_product_page(item)
+            print(
+                f"Checked product: {product['name']} | "
+                f"Price: {product['price']} | "
+                f"In stock: {product['in_stock']}"
+            )
+            products.append(product)
+        except Exception as e:
+            print(f"Error checking product page {item['url']}: {e}")
+
+    return products
