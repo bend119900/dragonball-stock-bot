@@ -1,5 +1,11 @@
 from .total_cards import check_total_cards
+from .travelling_man import check_travelling_man
 
 
 def get_all_products():
-    return check_total_cards()
+    products = []
+
+    products.extend(check_total_cards())
+    products.extend(check_travelling_man())
+
+    return products
