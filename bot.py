@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import datetime
 
+from priority import get_priority, priority_icon
 from stores import get_all_products
 from tracker import load_state, save_state, already_alerted, mark_alerted
 
@@ -21,9 +22,9 @@ def send_telegram(message):
         data={
             "chat_id": CHAT_ID,
             "text": message,
-            "disable_web_page_preview": False
+            "disable_web_page_preview": False,
         },
-        timeout=20
+        timeout=20,
     )
 
     print("Telegram response:", response.status_code)
@@ -37,6 +38,7 @@ def main():
 
     state = load_state()
     products = get_all_products()
+
     alerts_sent = 0
     in_stock_count = 0
 
@@ -58,22 +60,23 @@ def main():
             print(f"Already alerted: {store} - {name}")
             continue
 
+        priority = get_priority(name)
+        icon = priority_icon(priority)
+
         message = (
-            "🚨 DRAGON BALL PRODUCT FOUND\n\n"
+            f"{icon} DRAGON BALL RESTOCK {icon}\n\n"
+            f"⭐ Priority: {priority}\n\n"
             f"🏪 Store: {store}\n"
             f"📦 Product: {name}\n"
             f"💷 Price: {price}\n"
-            f"🔗 Link: {url}\n\n"
-            f"⏰ Checked: {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+            f"🔗 {url}\n\n"
+            f"⏰ {datetime.now().strftime('%d/%m/%Y %H:%M')}"
         )
 
         if send_telegram(message):
             alerts_sent += 1
             mark_alerted(state, store, name, url)
             print(f"✅ Alert sent: {store} - {name}")
-
-    
-
 
     save_state(state)
 
