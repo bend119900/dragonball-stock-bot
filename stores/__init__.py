@@ -7,6 +7,8 @@ from .the_card_vault import check_the_card_vault
 from .rules_of_play import check_rules_of_play
 from .the_vault_tcg import check_the_vault_tcg
 from .wiggys_collectables import check_wiggys_collectables
+from .ultimate_tcg import check_ultimate_tcg
+from .the_card_cloud import check_the_card_cloud
 
 def get_all_products():
     products = []
@@ -20,5 +22,7 @@ def get_all_products():
     products.extend(check_rules_of_play())
     products.extend(check_the_vault_tcg())
     products.extend(check_wiggys_collectables())
+    products.extend(check_ultimate_tcg())
+    products.extend(check_the_card_cloud())
 
     return products
