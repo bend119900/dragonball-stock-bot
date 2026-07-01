@@ -1,11 +1,18 @@
 def get_priority(product_name):
     name = product_name.lower()
 
-    if "booster box" in name:
+    is_japanese = "japanese" in name
+
+    if "booster box" in name and not is_japanese:
         return "HIGH"
 
+    if "booster box" in name and is_japanese:
+        return "MEDIUM"
+
     if "fb09" in name or "fb10" in name:
-        return "HIGH"
+        if not is_japanese:
+            return "HIGH"
+        return "MEDIUM"
 
     if "booster pack" in name:
         return "MEDIUM"
