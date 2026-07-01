@@ -41,6 +41,10 @@ def main():
 
     alerts_sent = 0
     in_stock_count = 0
+    telegram_enabled = BOT_TOKEN and CHAT_ID
+
+    if not telegram_enabled:
+        print("📵 Telegram disabled locally (missing secrets)")
 
     print(f"Products found: {len(products)}")
 
@@ -73,10 +77,11 @@ def main():
             f"⏰ {datetime.now().strftime('%d/%m/%Y %H:%M')}"
         )
 
-        if send_telegram(message):
-            alerts_sent += 1
-            mark_alerted(state, store, name, url)
-            print(f"✅ Alert sent: {store} - {name}")
+        if telegram_enabled:
+            if send_telegram(message):
+                alerts_sent += 1
+                mark_alerted(state, store, name, url)
+                print(f"✅ Alert sent: {store} - {name}")
 
     save_state(state)
 
